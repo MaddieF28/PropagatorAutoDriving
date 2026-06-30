@@ -1,0 +1,169 @@
+mask probability: 0.0
+
+Run 1
+steps: 300
+crashes: 1
+crash rate: 0.0033333333333333335
+action distribution: [0.20333333 0.19333333 0.21666667 0.18333333 0.20333333]
+avg speed: 0.2576087
+rejected actions: 116
+rejection rate: 0.38666666666666666
+avg known-fact fraction: 0.8000000000000042
+
+Run 2
+steps: 300
+crashes: 1
+crash rate: 0.0033333333333333335
+action distribution: [0.16       0.20333333 0.21333333 0.19       0.23333333]
+avg speed: 0.28152284
+rejected actions: 131
+rejection rate: 0.43666666666666665
+avg known-fact fraction: 0.7686666666666648
+
+Run 3
+steps: 300
+crashes: 1
+crash rate: 0.0033333333333333335
+action distribution: [0.20666667 0.18333333 0.20333333 0.19       0.21666667]
+avg speed: 0.2558342
+rejected actions: 119
+rejection rate: 0.39666666666666667
+avg known-fact fraction: 0.8000000000000042
+
+Run 4
+steps: 300
+crashes: 1
+crash rate: 0.0033333333333333335
+action distribution: [0.21       0.19333333 0.17       0.19       0.23666667]
+avg speed: 0.2750849
+rejected actions: 108
+rejection rate: 0.36
+avg known-fact fraction: 0.6840000000000029
+
+Run 5
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.23       0.21666667 0.16333333 0.18       0.21      ]
+avg speed: 0.27966842
+rejected actions: 150
+rejection rate: 0.5
+avg known-fact fraction: 0.8159999999999981
+
+Run 6
+steps: 300
+crashes: 1
+crash rate: 0.0033333333333333335
+action distribution: [0.15333333 0.20333333 0.22666667 0.20666667 0.21      ]
+avg speed: 0.29668853
+rejected actions: 140
+rejection rate: 0.4666666666666667
+avg known-fact fraction: 0.7733333333333317
+
+Run 7
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.21       0.21666667 0.21       0.18333333 0.18      ]
+avg speed: 0.26742682
+rejected actions: 176
+rejection rate: 0.5866666666666667
+avg known-fact fraction: 0.9306666666666664
+
+Run 8
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.20333333 0.19333333 0.21666667 0.18666667 0.2       ]
+avg speed: 0.25909346
+rejected actions: 117
+rejection rate: 0.39
+avg known-fact fraction: 0.8000000000000042
+
+Run 9
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.19333333 0.22       0.21666667 0.18666667 0.18333333]
+avg speed: 0.27628154
+rejected actions: 95
+rejection rate: 0.31666666666666665
+avg known-fact fraction: 0.6426666666666703
+
+Run 10
+steps: 300
+crashes: 2
+crash rate: 0.006666666666666667
+action distribution: [0.20666667 0.18666667 0.20666667 0.21666667 0.18333333]
+avg speed: 0.28461748
+rejected actions: 132
+rejection rate: 0.44
+avg known-fact fraction: 0.7733333333333364
+
+Run 11
+steps: 300
+crashes: 2
+crash rate: 0.006666666666666667
+action distribution: [0.22666667 0.18333333 0.19333333 0.21666667 0.18      ]
+avg speed: 0.27940318
+rejected actions: 111
+rejection rate: 0.37
+avg known-fact fraction: 0.6693333333333367
+
+Run 12
+steps: 300
+crashes: 4
+crash rate: 0.013333333333333334
+action distribution: [0.19333333 0.17666667 0.24333333 0.18666667 0.2       ]
+avg speed: 0.25722152
+rejected actions: 129
+rejection rate: 0.43
+avg known-fact fraction: 0.8000000000000042
+
+Run 13
+steps: 300
+crashes: 2
+crash rate: 0.006666666666666667
+action distribution: [0.2        0.19333333 0.17333333 0.25       0.18333333]
+avg speed: 0.28591973
+rejected actions: 119
+rejection rate: 0.39666666666666667
+avg known-fact fraction: 0.6846666666666683
+
+Run 14
+steps: 300
+crashes: 22
+crash rate: 0.07333333333333333
+action distribution: [0.21666667 0.17666667 0.21       0.22333333 0.17333333]
+avg speed: 0.2655694
+rejected actions: 132
+rejection rate: 0.44
+avg known-fact fraction: 0.7760000000000035
+
+Run 15
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.22666667 0.18       0.23666667 0.17       0.18666667]
+avg speed: 0.2605089
+rejected actions: 119
+rejection rate: 0.39666666666666667
+avg known-fact fraction: 0.8000000000000042
+
+===== AVERAGED PROPAGATOR NETWORK RESULTS =====
+
+Crashes:
+average crash rate: 0.008222222222222223
+mean crashes: 2.466666666666667
+std crashes: 5.327496806401879
+
+Behavior:
+average speed: 0.2721633
+average action distribution: [0.20266667 0.19466667 0.20666667 0.19733333 0.19866667]
+
+Rejections:
+average rejection rate: 0.4208888888888889
+mean rejected actions: 126.26666666666667
+
+Partial information:
+average known-fact fraction: 0.7679111111111133
