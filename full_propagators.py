@@ -240,7 +240,7 @@ if __name__ == "__main__":
     seeds = list(range(15))
 
     # set MASK_PROB > 0 to simulate sensor dropout and test graceful degradation
-    MASK_PROB = 0.0
+    MASK_PROB = 0.3
 
     crash_rates = []
     crashes_list = []
