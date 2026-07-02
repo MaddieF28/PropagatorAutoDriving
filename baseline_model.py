@@ -21,7 +21,7 @@ def run(seed):
 
     set_seed(seed)
 
-    env = gym.make("highway-v0", render_mode=None)
+    env = gym.make("highway-v0", render_mode="human")
     env.action_space.seed(seed)
     obs, info = env.reset(seed = seed)
     
@@ -33,7 +33,7 @@ def run(seed):
 
     action_counts = np.zeros(5)
 
-    for _ in range(60):
+    for _ in range(300):
 
         action = policy.act(obs)
         action_counts[action] += 1
@@ -72,7 +72,7 @@ def run(seed):
 
 if __name__ == "__main__":
 
-    seeds = list(range(5))
+    seeds = list(range(15))
     crash_rates = []
     crash_counts = []
     action_distributions = []
