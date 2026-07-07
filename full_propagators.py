@@ -17,13 +17,6 @@ class RandomPolicy:
         return np.random.randint(5)  # 0=left, 1=keep, 2=right, 3=accelerate, 4=brake
 
 
-# =========================================================
-# PROPAGATOR NETWORK
-# Each propagator is a small independent function that reads
-# only a few "cells" and writes a derived cell. If its inputs
-# are missing (None), it leaves its output as None (unknown)
-# instead of crashing or defaulting to unsafe/safe.
-# =========================================================
 
 def fresh_facts():
     return {
@@ -83,7 +76,6 @@ def update_facts_from_obs(obs, facts, mask_prob=0.0):
             facts[key] = None
 
 
-# ---- individual propagators (each touches only its own cells) ----
 
 def prop_ttc(facts):
     gap = facts["front_gap"]
@@ -133,16 +125,11 @@ PROPAGATORS = [prop_ttc, prop_front_risk, prop_speed_ok, prop_left_feasible, pro
 
 
 def run_propagators(facts):
-    # order-independent in principle (each only depends on raw cells),
-    # so a single pass is enough here, but loop kept explicit for clarity
     for p in PROPAGATORS:
         p(facts)
 
 
 def feasible_actions(facts):
-    """Given current facts, return the set of actions NOT contradicted by
-    a known constraint. Unknown facts default to 'not blocked' (treated as
-    permissive-unknown) rather than silently unsafe or silently safe-blocked."""
     feasible = {0, 1, 2, 3, 4}  # left, keep, right, accel, brake
 
     if facts["left_feasible"] is False:
@@ -163,13 +150,10 @@ def known_fraction(facts):
     return known / len(keys)
 
 
-# -----------------------
-# Main experiment loop
-# -----------------------
 def run(seed, mask_prob=0.0):
     set_seed(seed)
 
-    env = gym.make("highway-v0", render_mode=None)
+    env = gym.make("highway-v0", render_mode="human")
     obs, info = env.reset(seed=seed)
     env.action_space.seed(seed)
 
@@ -240,7 +224,7 @@ if __name__ == "__main__":
     seeds = list(range(15))
 
     # set MASK_PROB > 0 to simulate sensor dropout and test graceful degradation
-    MASK_PROB = 0.0
+    MASK_PROB = 0.3
 
     crash_rates = []
     crashes_list = []
