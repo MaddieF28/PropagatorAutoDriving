@@ -1,3 +1,7 @@
+// ---------------------------
+// propagators: random selection
+// --------------------------
+
 mask probability: 0.0
 
 Run 1
@@ -172,9 +176,9 @@ average known-fact fraction: 0.7679111111111133
 
 
 
-
-//run 2 w .3 mask prob
-
+//--------------------------------
+// propagators: random selection
+//--------------------------------
 
 mask probability: 0.3
 
@@ -350,8 +354,9 @@ average known-fact fraction: 0.5556444444444444
 
 
 
-
-//baseline no pgs 
+//-----------------------------
+//baseline no pgs: random policy
+//----------------------
 
 ===== BASELINE =====
 
@@ -397,6 +402,12 @@ average crash rate: 0.06666666666666667
 average speed: 0.29412556
 average action distribution: [0.23       0.22       0.20333333 0.18       0.16666667]
 ucsc-guest-169-233-124-211:PropagatorAutoDriving maddieflinn$ python3 baseline_model.py
+
+
+
+//---------------------------
+// baseline random policy
+//-------------------------
 
 running ...
 
@@ -513,3 +524,180 @@ std crash count: 7.19444229944198
 average crash rate: 0.07066666666666666
 average speed: 0.29742205
 average action distribution: [0.20444444 0.19888889 0.19577778 0.20444444 0.19644444]
+
+
+
+//-------------------
+// propagators: llm policy
+//----------- 
+
+running propagator network ...
+mask probability: 0
+
+Run 1
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.02333333 0.71       0.12       0.05       0.09666667]
+avg speed: 0.255959584414959
+rejected actions: 19
+rejection rate: 0.06333333333333334
+avg known-fact fraction: 0.8106666666666711
+
+Run 2
+steps: 300
+crashes: 3
+crash rate: 0.01
+action distribution: [0.12666667 0.63       0.05333333 0.11666667 0.07333333]
+avg speed: 0.28654316619038583
+rejected actions: 49
+rejection rate: 0.16333333333333333
+avg known-fact fraction: 0.7700000000000009
+
+Run 3
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.04333333 0.52       0.17666667 0.09666667 0.16333333]
+avg speed: 0.2557210786640644
+rejected actions: 31
+rejection rate: 0.10333333333333333
+avg known-fact fraction: 0.8340000000000035
+
+Run 4
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.01       0.72333333 0.09333333 0.05       0.12333333]
+avg speed: 0.26838389138380686
+rejected actions: 12
+rejection rate: 0.04
+avg known-fact fraction: 0.5760000000000022
+
+Run 5
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.04333333 0.72666667 0.04       0.08       0.11      ]
+avg speed: 0.2711496268212795
+rejected actions: 29
+rejection rate: 0.09666666666666666
+avg known-fact fraction: 0.7513333333333329
+
+Run 6
+steps: 300
+crashes: 4
+crash rate: 0.013333333333333334
+action distribution: [0.07666667 0.67       0.05333333 0.07333333 0.12666667]
+avg speed: 0.2927314411103725
+rejected actions: 30
+rejection rate: 0.1
+avg known-fact fraction: 0.793333333333332
+
+Run 7
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.05666667 0.76       0.03666667 0.05333333 0.09333333]
+avg speed: 0.25407284185290335
+rejected actions: 26
+rejection rate: 0.08666666666666667
+avg known-fact fraction: 0.8913333333333336
+
+Run 8
+steps: 300
+crashes: 1
+crash rate: 0.0033333333333333335
+action distribution: [0.02333333 0.60333333 0.16       0.08       0.13333333]
+avg speed: 0.2602320904533068
+rejected actions: 28
+rejection rate: 0.09333333333333334
+avg known-fact fraction: 0.8153333333333367
+
+Run 9
+steps: 300
+crashes: 0
+crash rate: 0.0
+action distribution: [0.02666667 0.72       0.10333333 0.04666667 0.10333333]
+avg speed: 0.2746554301182429
+rejected actions: 16
+rejection rate: 0.05333333333333334
+avg known-fact fraction: 0.6293333333333357
+
+Run 10
+steps: 300
+crashes: 1
+crash rate: 0.0033333333333333335
+action distribution: [0.14       0.69333333 0.04333333 0.07666667 0.04666667]
+avg speed: 0.2786929496129354
+rejected actions: 34
+rejection rate: 0.11333333333333333
+avg known-fact fraction: 0.7406666666666702
+
+Run 11
+steps: 300
+crashes: 1
+crash rate: 0.0033333333333333335
+action distribution: [0.01666667 0.79       0.08666667 0.05       0.05666667]
+avg speed: 0.2696011505524317
+rejected actions: 14
+rejection rate: 0.04666666666666667
+avg known-fact fraction: 0.67866666666667
+
+Run 12
+steps: 300
+crashes: 3
+crash rate: 0.01
+action distribution: [0.32       0.47333333 0.04       0.08666667 0.08      ]
+avg speed: 0.2559026547273
+rejected actions: 37
+rejection rate: 0.12333333333333334
+avg known-fact fraction: 0.7966666666666709
+
+Run 13
+steps: 300
+crashes: 1
+crash rate: 0.0033333333333333335
+action distribution: [0.02       0.77333333 0.06       0.06333333 0.08333333]
+avg speed: 0.2785728205740452
+rejected actions: 17
+rejection rate: 0.056666666666666664
+avg known-fact fraction: 0.5873333333333346
+
+Run 14
+steps: 300
+crashes: 25
+crash rate: 0.08333333333333333
+action distribution: [0.11666667 0.66       0.06       0.07666667 0.08666667]
+avg speed: 0.26608476907014844
+rejected actions: 25
+rejection rate: 0.08333333333333333
+avg known-fact fraction: 0.7100000000000021
+
+Run 15
+steps: 300
+crashes: 1
+crash rate: 0.0033333333333333335
+action distribution: [0.21333333 0.57333333 0.06333333 0.09666667 0.05333333]
+avg speed: 0.27006115674972536
+rejected actions: 47
+rejection rate: 0.15666666666666668
+avg known-fact fraction: 0.8026666666666709
+
+===== AVERAGED PROPAGATOR NETWORK RESULTS =====
+
+Crashes:
+average crash rate: 0.008888888888888889
+mean crashes: 2.6666666666666665
+std crashes: 6.095535707019979
+
+Behavior:
+average speed: 0.26922431015306053
+average action distribution: [0.08377778 0.66844444 0.07933333 0.07311111 0.09533333]
+
+Rejections:
+average rejection rate: 0.092
+mean rejected actions: 27.6
+
+Partial information:
+average known-fact fraction: 0.7458222222222245
