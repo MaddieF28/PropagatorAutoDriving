@@ -29,8 +29,9 @@ class LLMPolicy:
         ego_speed = ego[3]
 
         front_gap = None
-        left_clear = True
-        right_clear = True
+        front_rel_speed = None
+        left_gap = None
+        right_gap = None
 
         for v in others:
             presence, x, y, vx, vy = v
@@ -39,34 +40,73 @@ class LLMPolicy:
             if abs(y) < 0.12 and x > 0:
                 if front_gap is None or x < front_gap:
                     front_gap = x
-            elif -0.37 < y < -0.12 and abs(x) < 0.25:
-                left_clear = False
-            elif 0.12 < y < 0.37 and abs(x) < 0.25:
-                right_clear = False
+                    front_rel_speed = ego_speed - vx
+            elif -0.37 < y < -0.12:
+                if left_gap is None or abs(x) < left_gap:
+                    left_gap = abs(x)
+            elif 0.12 < y < 0.37:
+                if right_gap is None or abs(x) < right_gap:
+                    right_gap = abs(x)
 
-        front_desc = f"{front_gap:.2f} (CLOSE)" if front_gap and front_gap < 0.3 else (f"{front_gap:.2f}" if front_gap else "none")
+        # compute TTC
+        if front_gap is not None and front_rel_speed is not None and front_rel_speed > 0:
+            ttc = front_gap / front_rel_speed
+        else:
+            ttc = None
 
-        return f"""You are a highway driving agent. Pick the safest and most efficient action.
+        # label helpers
+        def gap_label(g):
+            if g is None:
+                return "none (clear)"
+            if g < 0.15:
+                return f"{g:.2f} (UNSAFE - too close)"
+            if g < 0.25:
+                return f"{g:.2f} (tight - risky)"
+            if g < 0.4:
+                return f"{g:.2f} (possible)"
+            return f"{g:.2f} (clear)"
 
-Current state:
-- Your speed: {ego_speed:.2f} (max safe speed is 0.40)
-- Car ahead gap: {front_desc}
-- Left lane clear: {"yes" if left_clear else "no"}
-- Right lane clear: {"yes" if right_clear else "no"}
+        def ttc_label(t):
+            if t is None:
+                return "no car ahead"
+            if t < 1.5:
+                return f"{t:.1f}s (CRITICAL)"
+            if t < 3.0:
+                return f"{t:.1f}s (warning)"
+            return f"{t:.1f}s (safe)"
 
-Rules:
-- If speed is above 0.30 do NOT accelerate
-- If car ahead gap is CLOSE change lanes or brake
-- If left or right lane is clear and car is ahead, change lanes
+        def speed_label(s):
+            if s > 0.35:
+                return f"{s:.2f} (too fast)"
+            if s < 0.15:
+                return f"{s:.2f} (too slow)"
+            return f"{s:.2f} (normal)"
 
-Actions:
-0 = change left
-1 = keep lane
-2 = change right
-3 = accelerate
-4 = brake
+        return f"""You are a highway driving agent. Choose the safest and most efficient action.
 
-Reply with a single digit 0-4 and absolutely nothing else."""
+        Current state:
+        - Speed: {speed_label(ego_speed)}
+        - Front gap: {gap_label(front_gap)}
+        - Front TTC: {ttc_label(ttc)}
+        - Left lane gap: {gap_label(left_gap)}
+        - Right lane gap: {gap_label(right_gap)}
+
+        Decision rules:
+        - If TTC is CRITICAL or front gap is UNSAFE → brake or change lanes immediately
+        - If left or right gap is possible or clear and front is dangerous → change lanes
+        - If speed is too fast → brake
+        - If speed is too slow and front is safe → accelerate
+        - Otherwise → keep lane
+
+        Actions:
+        0 = change left
+        1 = keep lane
+        2 = change right
+        3 = accelerate
+        4 = brake
+
+        Reply with a single digit 0-4 and absolutely nothing else."""
+
     def act(self, obs):
         prompt = self.format_obs(obs)
         try:
@@ -90,9 +130,18 @@ def run(seed):
 
     set_seed(seed)
 
-    env = gym.make("highway-v0", render_mode= None)
+
+    env = gym.make("highway-v0", render_mode=None)
+    env.unwrapped.configure({
+        "vehicles_count": 100,
+        "vehicles_density": 3,
+        "ego_spacing": 1,
+        "lanes_count": 3,
+        "duration": 40,
+    })
+    obs, info = env.reset(seed=seed)
     env.action_space.seed(seed)
-    obs, info = env.reset(seed = seed)
+
     
 
     policy = LLMPolicy()
@@ -102,7 +151,7 @@ def run(seed):
 
     action_counts = np.zeros(5)
 
-    for _ in range(50):
+    for _ in range(100):
 
         action = policy.act(obs)
         action_counts[action] += 1

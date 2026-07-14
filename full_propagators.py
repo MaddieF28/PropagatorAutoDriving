@@ -54,9 +54,11 @@ Current state:
 - Right lane clear: {"yes" if right_clear else "no"}
 
 Rules:
-- If speed is above 0.30 do NOT accelerate
-- If car ahead gap is CLOSE change lanes or brake
-- If left or right lane is clear and car is ahead, change lanes
+- if speed is under the speed limit by > .1: accelarate
+- if speed is over the speed limit by < .1: break
+- if there is a front risk, change lanes into a clear lane or break
+- try to maintain as close to the speed limit as possible
+
 
 Actions:
 0 = change left
@@ -94,7 +96,8 @@ def fresh_facts():
         "right_gap": None,
         "speed_limit": .35,
         "ttc": None,
-        "speed_ok": None,
+        "speed_slow": None,
+        "speed_fast": None,
         "left_feasible": None,
         "right_feasible": None,
         "front_risk": None,
@@ -161,15 +164,22 @@ def prop_front_risk(facts):
     if ttc is None:
         facts["front_risk"] = None
         return
-    facts["front_risk"] = ttc < 2.0
+    facts["front_risk"] = ttc < .5
 
 
-def prop_speed_ok(facts):
+def prop_speed_slow(facts):
     speed = facts["ego_speed"]
     if speed is None:
-        facts["speed_ok"] = None
+        facts["speed_slow"] = None
         return
-    facts["speed_ok"] = speed <= facts["speed_limit"]
+    facts["speed_slow"] = (speed <= (facts["speed_limit"] - .1))
+
+def prop_speed_fast(facts):
+    speed = facts["ego_speed"]
+    if speed is None:
+        facts["speed_fast"] = None
+        return
+    facts["speed_fast"] = speed >= facts["speed_limit"]
 
 
 def prop_left_feasible(facts):
@@ -188,7 +198,7 @@ def prop_right_feasible(facts):
     facts["right_feasible"] = gap >= .15
 
 
-PROPAGATORS = [prop_ttc, prop_front_risk, prop_speed_ok, prop_left_feasible, prop_right_feasible]
+PROPAGATORS = [prop_ttc, prop_front_risk, prop_speed_slow, prop_speed_fast, prop_left_feasible, prop_right_feasible]
 
 
 def run_propagators(facts):
@@ -204,9 +214,14 @@ def feasible_actions(facts):
     if facts["right_feasible"] is False:
         feasible.discard(2)
     if facts["front_risk"] is True:
-        feasible.discard(3)  # don't accelerate into risk
-    if facts["speed_ok"] is False:
-        feasible.discard(3)  # don't accelerate past limit
+        feasible.discard(3)  
+        feasible.discard(1)
+    if facts["speed_slow"] is True:
+        feasible.discard(4) 
+        feasible.discard(1)
+    if facts["speed_fast"] is True:
+        feasible.discard(1)
+        feasible.discard(3)
 
     return feasible
 
@@ -222,11 +237,18 @@ def run(seed, mask_prob=0.0):
     set_seed(seed)
 
 
+    env = gym.make('highway-v0', 
+        render_mode = "human",
+        config={
+        "action": {
+            "type": "DiscreteMetaAction",
+            "target_speeds": [0, 5, 10, 15, 20],
+        },
+        "vehicles_density" : 5,
+    })
 
-    env = gym.make("highway-v0", render_mode=None)
     obs, info = env.reset(seed=seed)
     env.action_space.seed(seed)
-
 
 
     policy = LLMPolicy()
@@ -238,10 +260,11 @@ def run(seed, mask_prob=0.0):
     speed_sum = 0
     known_frac_sum = 0
 
-    for _ in range(300):
 
+    for _ in range(30):
 
-        action = policy.act(obs)
+        llmaction = policy.act(obs)
+        action = llmaction
         action_counts[action] += 1
 
 
@@ -254,7 +277,7 @@ def run(seed, mask_prob=0.0):
 
         if action not in allowed:
             rejected += 1
-            action = 1  # fallback = keep lane
+            action = 4  # fallback = keep lane
 
         obs, reward, terminated, truncated, info = env.step(action)
         speed = obs[0][3] if hasattr(obs, "__len__") else 0
@@ -269,6 +292,11 @@ def run(seed, mask_prob=0.0):
             obs, info = env.reset(seed=seed)
         
        
+        print(f"llproposed: {llmaction}, allowed: {allowed} | front_risk: {facts['front_risk']} | ttc: {facts['ttc']} | front_gap: {facts['front_gap']}")
+        print(f"  final action: {action}")
+
+        print(f"  raw vehicle speed: {env.unwrapped.vehicle.speed:.3f}")
+        print(f"  crashed this step: {info.get('crashed')} | speed: {obs[0][3]:.3f}")
 
     env.close()
 
@@ -295,7 +323,7 @@ def run(seed, mask_prob=0.0):
 
 if __name__ == "__main__":
 
-    seeds = list(range(15))
+    seeds = list(range(5))
 
     # set MASK_PROB > 0 to simulate sensor dropout and test graceful degradation
     MASK_PROB = 0
