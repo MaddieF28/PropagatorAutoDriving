@@ -10,6 +10,11 @@ def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
 
+class Waypoint:
+    def __init__(self, x, lane):
+        self.x = x          # meters ahead
+        self.lane = lane    # target lane
+
 
 ##---------
 ## ollama policy
@@ -20,56 +25,67 @@ class LLMPolicy:
         self.url = "http://localhost:11434/api/generate"
         self.model = "phi4-mini"
 
-    def format_obs(self, obs):
-        obs = np.array(obs).reshape(5, 5)
-        ego = obs[0]
-        others = obs[1:]
+    def format_obs(self, obs, goal, distance, lane_error, ego_lane):
+            obs = np.array(obs).reshape(5, 5)
+            ego = obs[0]
+            others = obs[1:]
 
-        ego_speed = ego[3]
+            ego_speed = ego[3]
 
-        front_gap = None
-        left_clear = True
-        right_clear = True
+            front_gap = None
+            left_clear = True
+            right_clear = True
 
-        for v in others:
-            presence, x, y, vx, vy = v
-            if presence < 0.5:
-                continue
-            if abs(y) < 0.12 and x > 0:
-                if front_gap is None or x < front_gap:
-                    front_gap = x
-            elif -0.37 < y < -0.12 and abs(x) < 0.25:
-                left_clear = False
-            elif 0.12 < y < 0.37 and abs(x) < 0.25:
-                right_clear = False
+            for v in others:
+                presence, x, y, vx, vy = v
+                if presence < 0.5:
+                    continue
+                if abs(y) < 0.12 and x > 0:
+                    if front_gap is None or x < front_gap:
+                        front_gap = x
+                elif -0.37 < y < -0.12 and abs(x) < 0.25:
+                    left_clear = False
+                elif 0.12 < y < 0.37 and abs(x) < 0.25:
+                    right_clear = False
 
-        front_desc = f"{front_gap:.2f} (CLOSE)" if front_gap and front_gap < 0.3 else (f"{front_gap:.2f}" if front_gap else "none")
+            front_desc = f"{front_gap:.2f} (CLOSE)" if front_gap and front_gap < 0.3 else (f"{front_gap:.2f}" if front_gap else "none")
 
-        return f"""You are a highway driving agent. Pick the safest and most efficient action.
-
-Current state:
-- Your speed: {ego_speed:.2f} (max safe speed is 0.40)
-- Car ahead gap: {front_desc}
-- Left lane clear: {"yes" if left_clear else "no"}
-- Right lane clear: {"yes" if right_clear else "no"}
-
-Rules:
-- if speed is under the speed limit by > .1: accelarate
-- if speed is over the speed limit by < .1: break
-- if there is a front risk, change lanes into a clear lane or break
-- try to maintain as close to the speed limit as possible
+            if ego_lane > goal.lane:
+                lane_guidance = "You are right of the goal. Prioritize action 0 (change left) to reach your destination."
+            elif ego_lane < goal.lane:
+                lane_guidance = "You are left of the goal. Prioritize action 2 (change right) to reach your destination."
 
 
-Actions:
-0 = change left
-1 = keep lane
-2 = change right
-3 = accelerate
-4 = brake
+            return f"""You are a highway driving agent. Your objective is to safely reach the waypoint.
 
-Reply with a single digit 0-4 and absolutely nothing else."""
-    def act(self, obs):
-        prompt = self.format_obs(obs)
+    Priorities:
+    1. Never collide.
+    2. Reach the waypoint.
+    3. Maintain speed within .1 of the speed limit by using brake or acceleration
+    4. Avoid a front risk by using brake or change lane
+
+    Current state:
+    - Your speed: {ego_speed:.2f} (speed limit = .30)
+    - Car ahead gap: {front_desc}
+    - Left lane clear: {"yes" if left_clear else "no"}
+    - Right lane clear: {"yes" if right_clear else "no"}
+    - Your current lane: {ego_lane}
+
+    Waypoint:
+    You have {distance:.1f} meters to reach lane {goal.lane}.
+    {lane_guidance}
+
+    Actions:
+    0 = change left
+    1 = keep lane
+    2 = change right
+    3 = accelerate
+    4 = brake
+
+    Reply with a single digit 0-4 and absolutely nothing else."""
+    
+    def act(self, obs, goal, distance, lane_error, ego_lane):
+        prompt = self.format_obs(obs, goal, distance, lane_error, ego_lane)
         try:
             response = requests.post(self.url, json={
                 "model": self.model,
@@ -89,6 +105,7 @@ Reply with a single digit 0-4 and absolutely nothing else."""
 
 def fresh_facts():
     return {
+        # --- safety/physical facts (existing) ---
         "ego_speed": None,
         "front_gap": None,
         "front_rel_speed": None,
@@ -101,6 +118,16 @@ def fresh_facts():
         "left_feasible": None,
         "right_feasible": None,
         "front_risk": None,
+
+        # --- mission facts (new) ---
+        "goal_distance": None,
+        "goal_lane": None,
+        "lane_error": None,
+        "needs_left": None,
+        "needs_right": None,
+        "needs_speed_up": None,
+        "needs_slow_down": None,
+        "in_goal_lane": None,
     }
 
 
@@ -213,7 +240,6 @@ def feasible_actions(facts):
         feasible.discard(0)
     if facts["right_feasible"] is False:
         feasible.discard(2)
-    if facts["front_risk"] is True:
         feasible.discard(3)  
         feasible.discard(1)
     if facts["speed_slow"] is True:
@@ -242,13 +268,24 @@ def run(seed, mask_prob=0.0):
         config={
         "action": {
             "type": "DiscreteMetaAction",
-            "target_speeds": [0, 5, 10, 15, 20],
+            "target_speeds": [0, 5, 10, 15, 20, 25, 30, 35],
         },
-        "vehicles_density" : 5,
+        "vehicles_density" : .1,
+        "lanes_count": 4,
     })
 
     obs, info = env.reset(seed=seed)
     env.action_space.seed(seed)
+
+    ego_start_x = env.unwrapped.vehicle.position[0]
+
+    waypoints = [
+        Waypoint(ego_start_x + 100, 0), 
+        Waypoint(ego_start_x + 200, 3), 
+        Waypoint(ego_start_x + 300, 0),  
+    ]
+
+    current_waypoint = 0
 
 
     policy = LLMPolicy()
@@ -261,16 +298,47 @@ def run(seed, mask_prob=0.0):
     known_frac_sum = 0
 
 
+
     for _ in range(30):
 
-        llmaction = policy.act(obs)
+        ego = env.unwrapped.vehicle
+        ego_x = ego.position[0]
+        ego_lane = ego.lane_index[2]
+
+        goal = waypoints[current_waypoint]
+        distance = abs(goal.x - ego_x)
+
+        if ego_x >= goal.x or distance < 4:
+            if current_waypoint < len(waypoints) - 1:
+                print(f"\nReached Waypoint: {True if ego_lane == waypoints[current_waypoint].lane else False}")
+                current_waypoint += 1
+                print(f"-- Waypoint updated to {current_waypoint} ---")
+
+                # --- refresh goal/distance to the NEW waypoint ---
+                goal = waypoints[current_waypoint]
+                distance = abs(goal.x - ego_x)
+            else:
+                pass
+
+        lane_error = goal.lane - ego_lane 
+
+        llmaction = policy.act(obs, goal, distance, lane_error, ego_lane)  # sees correct goal
         action = llmaction
         action_counts[action] += 1
+
+        print(f"ego location: {ego_x}")
+        print(f"distance: {distance}")
+        print(f"Current lane: {ego_lane}")
+        print(f"Goal lane: {goal.lane}")
 
 
         facts = fresh_facts()
         update_facts_from_obs(obs, facts, mask_prob=mask_prob)
         run_propagators(facts)
+
+        facts["goal_distance"] = distance
+        facts["goal_lane"] = goal.lane
+        facts["lane_error"] = lane_error
 
         allowed = feasible_actions(facts)
         known_frac_sum += known_fraction(facts)
@@ -278,6 +346,8 @@ def run(seed, mask_prob=0.0):
         if action not in allowed:
             rejected += 1
             action = 4  # fallback = keep lane
+
+ 
 
         obs, reward, terminated, truncated, info = env.step(action)
         speed = obs[0][3] if hasattr(obs, "__len__") else 0
@@ -292,11 +362,12 @@ def run(seed, mask_prob=0.0):
             obs, info = env.reset(seed=seed)
         
        
-        print(f"llproposed: {llmaction}, allowed: {allowed} | front_risk: {facts['front_risk']} | ttc: {facts['ttc']} | front_gap: {facts['front_gap']}")
+        print(f"\nLLM Proposed: {llmaction}, allowed: {allowed} | front_risk: {facts['front_risk']} | ttc: {facts['ttc']} | front_gap: {facts['front_gap']}")
         print(f"  final action: {action}")
 
         print(f"  raw vehicle speed: {env.unwrapped.vehicle.speed:.3f}")
         print(f"  crashed this step: {info.get('crashed')} | speed: {obs[0][3]:.3f}")
+
 
     env.close()
 
