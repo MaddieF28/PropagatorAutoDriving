@@ -60,9 +60,9 @@ class LLMPolicy:
             boundary_note = "You are already in the rightmost lane — action 2 (change right) is not possible."
 
         if ego_lane > goal.lane:
-            lane_guidance = "You are right of the goal. Prioritize action 0 (change left) to reach your destination."
+            lane_guidance = "You are right of the goal. Prioritize action 0 (change left) to reach your destination. Avoid changing lanes in the opposite direction (action 2)"
         elif ego_lane < goal.lane:
-            lane_guidance = "You are left of the goal. Prioritize action 2 (change right) to reach your destination."
+            lane_guidance = "You are left of the goal. Prioritize action 2 (change right) to reach your destination. Avoid changing lanes in the opposite direction (action 0)."
         else:
             lane_guidance = "You are in the goal lane. Maintain lane and focus on speed."
 
@@ -190,6 +190,7 @@ CONSTRAINT_TIERS = [
     ("safety",         ["avoid_collision"]),
     ("legality",       ["stay_legal"]),
     ("route",          ["preserve_route", "hold_route"]),
+    ("no_regression",  ["no_lane_regression"]),   # new
     ("progress",       ["increase_progress"]),
     ("comfort",        ["maintain_comfort"]),
     ("brake_fallback", ["brake_for_front_risk"]),
@@ -208,7 +209,7 @@ SITUATION_CONSTRAINTS = {
 }
 
 def infer_constraints(llm_action, facts, situation=None):
-    base = {"avoid_collision", "stay_legal", "maintain_comfort"}
+    base = {"avoid_collision", "stay_legal", "maintain_comfort", "no_lane_regression"}
 
     if facts.get("front_risk") is True:
         base.add("brake_for_front_risk")
@@ -276,6 +277,13 @@ def satisfies_maintain_comfort(predicted, facts):
 def satisfies_matches_llm_intent(action, llm_action):
     return action == llm_action
 
+def satisfies_no_lane_regression(predicted, facts):
+    lane_error = facts.get("lane_error")
+    predicted_lane_error = predicted.get("lane_error")
+    if lane_error is None or predicted_lane_error is None:
+        return None
+    return abs(predicted_lane_error) <= abs(lane_error)
+
 CONSTRAINT_CHECKS = {
     "avoid_collision": satisfies_avoid_collision,
     "stay_legal": satisfies_stay_legal,
@@ -284,6 +292,7 @@ CONSTRAINT_CHECKS = {
     "hold_route": satisfies_hold_route,
     "maintain_comfort": satisfies_maintain_comfort,
     "brake_for_front_risk": satisfies_brake_for_front_risk,
+    "no_lane_regression": satisfies_no_lane_regression,
 }
 
 def evaluate_action(action, facts, llm_action, intended):
@@ -648,11 +657,11 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
         constraint_score = None
         intended_constraints = None
 
-        if mode == "raw":
+        if mode == "raw": #pure llm
             action = llmaction
             overridden = False
 
-        elif mode == "shield":
+        elif mode == "shield": #brake fallback
             allowed = feasible_actions(facts)
             if llmaction not in allowed:
                 action = 4
@@ -661,7 +670,7 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
                 action = llmaction
                 overridden = False
 
-        elif mode == "random_matched":
+        elif mode == "random_matched": #llm chooses infeasible randomly choose new action
             allowed = feasible_actions(facts)
             rate = target_rejection_rate if target_rejection_rate is not None else 0.0
             if llmaction not in allowed or np.random.rand() < rate:
@@ -697,7 +706,7 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
 
         if isinstance(info, dict) and info.get("crashed", False):
             crashes += 1
-            print("\n!!! CRASH DETECTED !!!")
+            print("\n\n! CRASH DETECTED !!!")
             print("action:", action)
             print("LLM action:", llmaction)
             print("situation:", situation)
@@ -712,7 +721,7 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
         print(f"LLM proposed: {llmaction} ({situation}) | final action: {action} | overridden: {overridden}")
         print(f"\n Speed at decision time: {pre_step_speed:.3f} | Speed after action: {env.unwrapped.vehicle.speed:.3f}")
 
-        if mode == "intent":
+        if mode == "intent": #hierarchical constraints
             if explanation["overridden"]:
                 if not explanation["llm_feasible"]:
                     infeasible_overrides += 1
