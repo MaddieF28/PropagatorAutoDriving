@@ -4,6 +4,10 @@ import numpy as np
 import random
 import requests
 import re
+import csv
+import os
+
+
 
 
 SPEED_LIMIT = 30  # real speed units, matches TARGET_SPEEDS
@@ -127,8 +131,9 @@ class LLMPolicy:
             action = self._parse_action(text)
             situation = self._parse_situation(text)
             return action, situation
-        except Exception:
-            return 1, "maintaining_speed"  # fallback on any error
+        except Exception as e:
+            print(f"LLM call failed: {e}")
+            return 1, "maintaining_speed"
 
     def _parse_action(self, text):
         match = re.search(r"ACTION:\s*([0-4])", text, re.IGNORECASE)
@@ -207,6 +212,23 @@ SITUATION_CONSTRAINTS = {
     "maintaining_speed":      {"increase_progress"},
     "correcting_lane_error":  {"preserve_route"},
 }
+
+TIER_NAMES = [name for name, _ in CONSTRAINT_TIERS]
+
+def log_result(row: dict, path="results.csv"):
+    file_exists = os.path.isfile(path)
+    with open(path, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=row.keys())
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(row)
+
+def log_tier_wins(mode, seed, mask_prob, tier_win_counts, path="tier_wins.csv"):
+    row = {"mode": mode, "seed": seed, "mask_prob": mask_prob}
+    for name, count in zip(TIER_NAMES, tier_win_counts):
+        row[f"tier_{name}"] = count
+    log_result(row, path=path)
+
 
 def infer_constraints(llm_action, facts, situation=None):
     base = {"avoid_collision", "stay_legal", "maintain_comfort", "no_lane_regression"}
@@ -571,7 +593,7 @@ def known_fraction(facts):
 
 
 
-def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
+def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None, num_steps=3):
     set_seed(seed)
 
 
@@ -610,6 +632,7 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
     speed_sum = 0
     known_frac_sum = 0
     goal_abandoned = 0
+    waypoints_reached = 0
 
     override_reasons = {}   # constraint_name -> count of times it was the failure
     tier_win_counts = np.zeros(len(CONSTRAINT_TIERS))  # which tier had first nonzero gap when overridden
@@ -617,7 +640,7 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
 
 
 
-    for _ in range(30):
+    for _ in range(num_steps): #num_steps
 
         ego = env.unwrapped.vehicle
         ego_x = ego.position[0]
@@ -627,7 +650,8 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
         distance = abs(goal.x - ego_x)
         if ego_x >= goal.x or distance <= 30:
             if current_waypoint < len(waypoints) - 1:
-                print(f"\nReached Waypoint: {True if ego_lane == waypoints[current_waypoint].lane else False}")
+                if ego_lane == waypoints[current_waypoint].lane:
+                    waypoints_reached += 1
                 current_waypoint += 1
                 print(f"-- Waypoint updated to {current_waypoint} ---")
                 goal = waypoints[current_waypoint]
@@ -742,6 +766,15 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
 
             print(f"  score: {constraint_score} | intended: {intended_constraints}")
 
+    final_ego_x = env.unwrapped.vehicle.position[0]
+    final_goal = waypoints[current_waypoint]
+    final_distance_to_goal = abs(final_goal.x - final_ego_x)
+    route_progress = current_waypoint + max(0, 1 - final_distance_to_goal / 200)
+
+    print(f"\noverride reasons (constraint -> times it failed on LLM action):", override_reasons)
+    print("tier that decided each override:", dict(zip([t for t,_ in CONSTRAINT_TIERS], tier_win_counts)))
+    print("infeasible-triggered overrides:", infeasible_overrides)
+
     print(f"\noverride reasons (constraint -> times it failed on LLM action):", override_reasons)
     print("tier that decided each override:", dict(zip([t for t,_ in CONSTRAINT_TIERS], tier_win_counts)))
     print("infeasible-triggered overrides:", infeasible_overrides)
@@ -749,6 +782,10 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
     return (
                 crashes / max(1, steps),
                 crashes,
+                waypoints_reached,
+                current_waypoint,
+                final_distance_to_goal,
+                route_progress,
                 action_counts / action_counts.sum(),
                 speed_sum / max(1, steps),
                 rejected / max(1, steps),
@@ -765,7 +802,7 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None):
 
 if __name__ == "__main__":
 
-    seeds = list(range(5))
+    seeds = list(range(2))
 
     # set MASK_PROB > 0 to simulate sensor dropout and test graceful degradation
     MASK_PROB = 0
@@ -789,7 +826,7 @@ if __name__ == "__main__":
         (crash_rate, crashes, action_dist, speed, rejected_rate, rejected,
          known_frac, goal_abandoned, override_reasons, tier_win_counts,
          infeasible_overrides) = run(
-            s, mask_prob=MASK_PROB, mode="intent"
+            s, mask_prob=MASK_PROB, mode="intent", num_steps = 30
         )
 
         crash_rates.append(crash_rate)
