@@ -477,7 +477,7 @@ def prop_speed_slow(facts):
     if speed is None:
         facts["speed_slow"] = None
         return
-    facts["speed_slow"] = speed < facts["speed_limit"] - 2
+    facts["speed_slow"] = speed < facts["speed_limit"] - 10
 
 def prop_speed_fast(facts):
     speed = facts["ego_speed"]
@@ -555,12 +555,6 @@ def feasible_actions(facts):
         feasible.discard(0)
     if facts["right_feasible"] is False:
         feasible.discard(2)
-    if facts["speed_slow"] is True:
-        feasible.discard(4)
-        feasible.discard(1)
-        predicted_accel = predict_effect(3, facts)
-        if predicted_accel.get("speed_fast") is True:
-            feasible.discard(3)
     if facts["speed_fast"] is True:
         feasible.discard(1)
         feasible.discard(3)
@@ -740,6 +734,13 @@ def run(seed, mask_prob=0.0, mode="intent", target_rejection_rate=None, num_step
 
         if terminated or truncated:
             obs, info = env.reset(seed=seed)
+            ego_start_x = env.unwrapped.vehicle.position[0]
+            waypoints = [
+                Waypoint(ego_start_x + 200, 0),
+                Waypoint(ego_start_x + 400, 3),
+                Waypoint(ego_start_x + 600, 0),
+            ]
+            current_waypoint = 0
 
         print(f"\nego location : {ego_x:.1f} | goal_lane: {goal.lane} | curr lane: {ego_lane} | distance : {distance}")
         print(f"LLM proposed: {llmaction} ({situation}) | final action: {action} | overridden: {overridden}")

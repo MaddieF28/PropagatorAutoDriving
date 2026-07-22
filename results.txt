@@ -986,3 +986,204 @@ mean rejected actions: 6.25
 
 Partial information:
 average known-fact fraction: 0.7449999999999986
+
+
+
+
+
+
+FEASIBLE ACTIONS: [0, 3]
+FACTS: {'left_gap': 0.09073734283447266, 'right_gap': None, 'left_feasible': True, 'right_feasible': False, 'front_risk': False, 'speed_slow': True, 'speed_fast': False, 'lane_error': -3}
+
+ACTION DEBUG
+lane_error: -3
+intended: {'avoid_collision', 'preserve_route', 'maintain_comfort', 'increase_progress', 'matches_llm_intent', 'stay_legal', 'no_lane_regression'}
+
+Action: 0
+score: (1, 1, 1, 1, 0, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': True, 'no_lane_regression': True, 'increase_progress': False, 'maintain_comfort': True, 'matches_llm_intent': False}
+predicted lane_error: -2
+predicted speed: 25.0
+predicted front_risk: False
+
+Action: 3
+score: (1, 1, 0, 1, 1, 1, 0, 1)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': False, 'no_lane_regression': True, 'increase_progress': True, 'maintain_comfort': True, 'matches_llm_intent': True}
+predicted lane_error: -3
+predicted speed: 30.0
+predicted front_risk: False
+
+ego location : 177.5 | goal_lane: 0 | curr lane: 3 | distance : 199.99999999999997
+LLM proposed: 3 (maintaining_speed) | final action: 0 | overridden: True
+
+ Speed at decision time: 25.000 | Speed after action: 25.000
+  LLM action failed: ['preserve_route'] | replacement satisfies: ['avoid_collision', 'stay_legal', 'preserve_route', 'no_lane_regression', 'maintain_comfort']
+  score: (1, 1, 1, 1, 0, 1, 0, 0) | intended: {'avoid_collision', 'preserve_route', 'maintain_comfort', 'increase_progress', 'matches_llm_intent', 'stay_legal', 'no_lane_regression'}
+  left_gap=0.06032348424196243 left_feasible=False right_gap=0.30557894706726074 right_feasible=True front_risk=False
+FEASIBLE ACTIONS: [2, 3]
+FACTS: {'left_gap': 0.06032348424196243, 'right_gap': 0.30557894706726074, 'left_feasible': False, 'right_feasible': True, 'front_risk': False, 'speed_slow': True, 'speed_fast': False, 'lane_error': -2}
+
+ACTION DEBUG
+lane_error: -2
+intended: {'avoid_collision', 'preserve_route', 'maintain_comfort', 'increase_progress', 'matches_llm_intent', 'stay_legal', 'no_lane_regression'}
+
+Action: 2
+score: (1, 1, 0, 0, 0, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': False, 'no_lane_regression': False, 'increase_progress': False, 'maintain_comfort': True, 'matches_llm_intent': False}
+predicted lane_error: -3
+predicted speed: 25.0
+predicted front_risk: False
+
+Action: 3
+score: (1, 1, 0, 1, 1, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': False, 'no_lane_regression': True, 'increase_progress': True, 'maintain_comfort': True, 'matches_llm_intent': False}
+predicted lane_error: -2
+predicted speed: 30.0
+predicted front_risk: False
+
+ego location : 202.2 | goal_lane: 0 | curr lane: 2 | distance : 175.2576696318653
+LLM proposed: 1 (maintaining_speed) | final action: 3 | overridden: True
+
+ Speed at decision time: 25.000 | Speed after action: 29.146
+  LLM action 1 was infeasible (excluded before scoring)
+  score: (1, 1, 0, 1, 1, 1, 0, 0) | intended: {'avoid_collision', 'preserve_route', 'maintain_comfort', 'increase_progress', 'matches_llm_intent', 'stay_legal', 'no_lane_regression'}
+  left_gap=0.013274667784571648 left_feasible=False right_gap=0.2726585566997528 right_feasible=True front_risk=False
+FEASIBLE ACTIONS: [1, 2, 3, 4]
+FACTS: {'left_gap': 0.013274667784571648, 'right_gap': 0.2726585566997528, 'left_feasible': False, 'right_feasible': True, 'front_risk': False, 'speed_slow': False, 'speed_fast': False, 'lane_error': -2}
+
+ACTION DEBUG
+lane_error: -2
+intended: {'avoid_collision', 'preserve_route', 'maintain_comfort', 'matches_llm_intent', 'stay_legal', 'no_lane_regression'}
+
+Action: 1
+score: (1, 1, 0, 1, 0, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': False, 'no_lane_regression': True, 'maintain_comfort': True, 'matches_llm_intent': False}
+predicted lane_error: -2
+predicted speed: 29.1455588268693
+predicted front_risk: False
+
+Action: 2
+score: (1, 1, 0, 0, 0, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': False, 'no_lane_regression': False, 'maintain_comfort': True, 'matches_llm_intent': False}
+predicted lane_error: -3
+predicted speed: 29.1455588268693
+predicted front_risk: False
+
+Action: 3
+score: (1, 0, 0, 1, 0, 1, 0, 1)
+results: {'avoid_collision': True, 'stay_legal': False, 'preserve_route': False, 'no_lane_regression': True, 'maintain_comfort': True, 'matches_llm_intent': True}
+predicted lane_error: -2
+predicted speed: 34.145558826869305
+predicted front_risk: False
+
+Action: 4
+score: (1, 1, 0, 1, 0, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': False, 'no_lane_regression': True, 'maintain_comfort': True, 'matches_llm_intent': False}
+predicted lane_error: -2
+predicted speed: 24.1455588268693
+predicted front_risk: False
+
+ego location : 229.7 | goal_lane: 0 | curr lane: 2 | distance : 147.75364395525565
+LLM proposed: 3 (approaching_exit) | final action: 1 | overridden: True
+
+ Speed at decision time: 29.146 | Speed after action: 29.854
+  LLM action failed: ['stay_legal', 'preserve_route'] | replacement satisfies: ['avoid_collision', 'stay_legal', 'no_lane_regression', 'maintain_comfort']
+  score: (1, 1, 0, 1, 0, 1, 0, 0) | intended: {'avoid_collision', 'preserve_route', 'maintain_comfort', 'matches_llm_intent', 'stay_legal', 'no_lane_regression'}
+  left_gap=0.040059302002191544 left_feasible=False right_gap=0.22577378153800964 right_feasible=True front_risk=True
+FEASIBLE ACTIONS: [2, 4]
+FACTS: {'left_gap': 0.040059302002191544, 'right_gap': 0.22577378153800964, 'left_feasible': False, 'right_feasible': True, 'front_risk': True, 'speed_slow': False, 'speed_fast': False, 'lane_error': -2}
+
+ACTION DEBUG
+lane_error: -2
+intended: {'avoid_collision', 'maintain_comfort', 'brake_for_front_risk', 'matches_llm_intent', 'preserve_route', 'increase_progress', 'stay_legal', 'no_lane_regression'}
+
+Action: 2
+score: (1, 1, 0, 0, 1, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': False, 'no_lane_regression': False, 'increase_progress': True, 'maintain_comfort': True, 'brake_for_front_risk': False, 'matches_llm_intent': False}
+predicted lane_error: -3
+predicted speed: 29.853986056331806
+predicted front_risk: False
+
+Action: 4
+score: (1, 1, 0, 1, 0, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': False, 'no_lane_regression': True, 'increase_progress': False, 'maintain_comfort': True, 'brake_for_front_risk': False, 'matches_llm_intent': False}
+predicted lane_error: -2
+predicted speed: 24.853986056331806
+predicted front_risk: False
+
+ego location : 259.3 | goal_lane: 0 | curr lane: 2 | distance : 118.17873387386845
+LLM proposed: 3 (maintaining_speed) | final action: 4 | overridden: True
+
+ Speed at decision time: 29.854 | Speed after action: 25.829
+  LLM action 3 was infeasible (excluded before scoring)
+  score: (1, 1, 0, 1, 0, 1, 0, 0) | intended: {'avoid_collision', 'maintain_comfort', 'brake_for_front_risk', 'matches_llm_intent', 'preserve_route', 'increase_progress', 'stay_legal', 'no_lane_regression'}
+  left_gap=0.22615674138069153 left_feasible=True right_gap=0.18805177509784698 right_feasible=True front_risk=True
+FEASIBLE ACTIONS: [0, 2, 4]
+FACTS: {'left_gap': 0.22615674138069153, 'right_gap': 0.18805177509784698, 'left_feasible': True, 'right_feasible': True, 'front_risk': True, 'speed_slow': True, 'speed_fast': False, 'lane_error': -2}
+
+ACTION DEBUG
+lane_error: -2
+intended: {'avoid_collision', 'maintain_comfort', 'brake_for_front_risk', 'matches_llm_intent', 'preserve_route', 'increase_progress', 'stay_legal', 'no_lane_regression'}
+
+Action: 0
+score: (1, 1, 1, 1, 0, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': True, 'no_lane_regression': True, 'increase_progress': False, 'maintain_comfort': True, 'brake_for_front_risk': False, 'matches_llm_intent': False}
+predicted lane_error: -1
+predicted speed: 25.82948910806644
+predicted front_risk: False
+
+Action: 2
+score: (1, 1, 0, 0, 0, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': False, 'no_lane_regression': False, 'increase_progress': False, 'maintain_comfort': True, 'brake_for_front_risk': False, 'matches_llm_intent': False}
+predicted lane_error: -3
+predicted speed: 25.82948910806644
+predicted front_risk: False
+
+Action: 4
+score: (1, 1, 0, 1, 0, 1, 0, 0)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': False, 'no_lane_regression': True, 'increase_progress': False, 'maintain_comfort': True, 'brake_for_front_risk': False, 'matches_llm_intent': False}
+predicted lane_error: -2
+predicted speed: 20.82948910806644
+predicted front_risk: False
+
+ego location : 286.7 | goal_lane: 0 | curr lane: 2 | distance : 90.76403575197207
+LLM proposed: 1 (maintaining_speed) | final action: 0 | overridden: True
+
+ Speed at decision time: 25.829 | Speed after action: 25.142
+  LLM action 1 was infeasible (excluded before scoring)
+  score: (1, 1, 1, 1, 0, 1, 0, 0) | intended: {'avoid_collision', 'maintain_comfort', 'brake_for_front_risk', 'matches_llm_intent', 'preserve_route', 'increase_progress', 'stay_legal', 'no_lane_regression'}
+  left_gap=0.40111491084098816 left_feasible=True right_gap=0.0807579755783081 right_feasible=False front_risk=False
+FEASIBLE ACTIONS: [0]
+FACTS: {'left_gap': 0.40111491084098816, 'right_gap': 0.0807579755783081, 'left_feasible': True, 'right_feasible': False, 'front_risk': False, 'speed_slow': True, 'speed_fast': False, 'lane_error': -1}
+
+ACTION DEBUG
+lane_error: -1
+intended: {'avoid_collision', 'preserve_route', 'maintain_comfort', 'increase_progress', 'matches_llm_intent', 'stay_legal', 'no_lane_regression'}
+
+Action: 0
+score: (1, 1, 1, 1, 0, 1, 0, 1)
+results: {'avoid_collision': True, 'stay_legal': True, 'preserve_route': True, 'no_lane_regression': True, 'increase_progress': False, 'maintain_comfort': True, 'matches_llm_intent': True}
+predicted lane_error: 0
+predicted speed: 25.14174992931909
+predicted front_risk: False
+
+ego location : 311.9 | goal_lane: 0 | curr lane: 1 | distance : 65.60291262733682
+LLM proposed: 0 (approaching_exit) | final action: 0 | overridden: False
+
+ Speed at decision time: 25.142 | Speed after action: 25.024
+  score: (1, 1, 1, 1, 0, 1, 0, 1) | intended: {'avoid_collision', 'preserve_route', 'maintain_comfort', 'increase_progress', 'matches_llm_intent', 'stay_legal', 'no_lane_regression'}
+  left_gap=None left_feasible=False right_gap=0.06588232517242432 right_feasible=False front_risk=False
+FEASIBLE ACTIONS: []
+FACTS: {'left_gap': None, 'right_gap': 0.06588232517242432, 'left_feasible': False, 'right_feasible': False, 'front_risk': False, 'speed_slow': True, 'speed_fast': False, 'lane_error': 0}
+
+ACTION DEBUG
+lane_error: 0
+intended: {'avoid_collision', 'maintain_comfort', 'increase_progress', 'matches_llm_intent', 'stay_legal', 'no_lane_regression', 'hold_route'}
+
+ego location : 336.6 | goal_lane: 0 | curr lane: 0 | distance : 40.885322655105995
+LLM proposed: 1 (maintaining_speed) | final action: 1 | overridden: False
+
+ Speed at decision time: 25.024 | Speed after action: 25.004
+  score: (1, 1, 1, 1, 0, 1, 0, 1) | intended: {'avoid_collision', 'maintain_comfort', 'increase_progress', 'matches_llm_intent', 'stay_legal', 'no_lane_regression', 'hold_route'}
+
+Reached Waypoint: True
